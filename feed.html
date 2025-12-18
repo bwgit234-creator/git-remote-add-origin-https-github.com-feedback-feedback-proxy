@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Оценка обслуживания</title>
+<style>
+body {font-family:Arial,sans-serif; display:flex; justify-content:center; align-items:center; height:100vh; background:#f5f7fa;}
+.container {width:420px; background:#fff; padding:32px; border-radius:24px; box-shadow:0 8px 25px rgba(0,0,0,0.1); text-align:center;}
+h2 {margin-bottom:16px;}
+.cash-select {width:100%; padding:12px; margin-bottom:20px; font-size:16px;}
+.rating-btns {display:flex; justify-content:space-between; margin-bottom:20px;}
+.rating-btns button {width:70px; height:70px; font-size:32px; border:none; border-radius:16px; cursor:pointer; background:#f0f0f0;}
+.rating-btns button.selected {border:2px solid #4a90e2;}
+.comment-box {width:100%; height:90px; padding:10px; border-radius:12px; border:1px solid #ccc; resize:none; display:none; margin-bottom:16px;}
+.submit-btn {width:100%; padding:14px; background:#4a90e2; color:#fff; border:none; border-radius:14px; font-size:18px; cursor:pointer;}
+.submit-btn:hover {background:#3b7ac4;}
+.thanks {display:none; margin-top:15px;}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Оцените обслуживание</h2>
+
+  <select id="cashdesk" class="cash-select">
+    <option value="1">Касса №1</option>
+    <option value="2">Касса №2</option>
+    <option value="3">Касса №3</option>
+  </select>
+
+  <div class="rating-btns">
+    <button onclick="selectRating(this,5)">😃</button>
+    <button onclick="selectRating(this,4)">🙂</button>
+    <button onclick="selectRating(this,3)">😐</button>
+    <button onclick="selectRating(this,2)">🙁</button>
+    <button onclick="selectRating(this,1)">😡</button>
+  </div>
+
+  <textarea id="comment" class="comment-box" placeholder="Что было не так?"></textarea>
+
+  <button class="submit-btn" onclick="submitFeedback()">Отправить</button>
+
+  <div class="thanks" id="thanks">Спасибо за ваш отзыв!</div>
+</div>
+
+<script>
+let selectedRating = null;
+let selectedButton = null;
+
+function selectRating(btn, value){
+  selectedRating = value;
+
+  if(selectedButton) selectedButton.classList.remove("selected");
+  btn.classList.add("selected");
+  selectedButton = btn;
+
+  document.getElementById("comment").style.display = (value <= 2) ? "block" : "none";
+}
+
+function submitFeedback(){
+  const cashdesk = document.getElementById("cashdesk").value;
+  const comment = document.getElementById("comment").value;
+
+  if(!selectedRating){
+    alert("Выберите оценку");
+    return;
+  }
+
+  const data = { cashdesk, rating: selectedRating, comment };
+
+  // fetch на локальный Node.js прокси
+  fetch('http://localhost:3000/feedback', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  })
+  .then(resp => resp.json())
+  .then(result => {
+    if(result.status === "success"){
+      document.getElementById("thanks").style.display = "block";
+      setTimeout(()=>{
+        selectedRating = null;
+        if(selectedButton) selectedButton.classList.remove("selected");
+        selectedButton = null;
+        document.getElementById("comment").value = "";
+        document.getElementById("comment").style.display = "none";
+        document.getElementById("thanks").style.display = "none";
+      },2000);
+    } else {
+      alert("Ошибка: " + result.message);
+    }
+  })
+  .catch(err => {
+    console.error(err);
+    alert("Не удалось отправить отзыв");
+  });
+}
+</script>
+
+</body>
+</html>

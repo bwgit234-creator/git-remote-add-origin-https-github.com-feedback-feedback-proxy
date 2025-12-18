@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(GAS_URL='https://script.google.com/macros/s/AKfycby0wOoRhLUV3wcVejP5excb4qKeT8joW9rs_UlGxsB-ZBn_eKugxl6HjNEqPxUqp3qzkg/exec' npm start:*)",
+      "Bash(curl:*)"
+    ]
+  }
+}
